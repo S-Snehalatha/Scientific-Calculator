@@ -1,0 +1,116 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Hyperbolic Trigonometric Functions</title>
+  <style>
+    body {
+      font-family: Arial, sans-serif;
+      background-color: #f4f4f9;
+      margin: 0;
+      padding: 0;
+    }
+
+    .container {
+      max-width: 500px;
+      margin: 100px auto;
+      padding: 30px;
+      background-color: white;
+      border-radius: 8px;
+      box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+    }
+
+    h1 {
+      text-align: center;
+      color: #333;
+    }
+
+    label {
+      font-size: 16px;
+      margin-top: 20px;
+      display: block;
+    }
+
+    input {
+      width: 100%;
+      padding: 10px;
+      margin: 10px 0;
+      font-size: 16px;
+      border-radius: 4px;
+      border: 1px solid #ccc;
+    }
+
+    button {
+      padding: 10px 20px;
+      background-color: #4CAF50;
+      color: white;
+      border: none;
+      border-radius: 4px;
+      cursor: pointer;
+      width: 100%;
+      font-size: 16px;
+    }
+
+    button:hover {
+      background-color: #45a049;
+    }
+
+    .result {
+      margin-top: 20px;
+      font-size: 18px;
+      font-weight: bold;
+    }
+
+    .result div {
+      margin-bottom: 10px;
+    }
+
+    .error {
+      color: red;
+    }
+  </style>
+</head>
+<body>
+
+  <div class="container">
+    <h1>📈 Hyperbolic Trigonometric Functions</h1>
+    
+    <label for="inputValue">Enter value (in radians)</label>
+    <input type="number" id="inputValue" placeholder="Enter number in radians" />
+
+    <button onclick="calculateHyperbolic()">Calculate</button>
+
+    <div id="result" class="result"></div>
+  </div>
+
+  <script>
+    function calculateHyperbolic() {
+      const x = parseFloat(document.getElementById('inputValue').value);
+      if (isNaN(x)) {
+        document.getElementById('result').innerHTML = "<span class='error'>Please enter a valid number.</span>";
+        return;
+      }
+
+      const sinhX = Math.sinh(x);
+      const coshX = Math.cosh(x);
+      const tanhX = Math.tanh(x);
+      const cothX = 1 / Math.tanh(x);  // coth(x) = 1 / tanh(x)
+      const sechX = 1 / Math.cosh(x);  // sech(x) = 1 / cosh(x)
+      const cschX = 1 / Math.sinh(x);  // csch(x) = 1 / sinh(x)
+
+      const resultHTML = `
+        <div>sinh(${x}) = ${sinhX.toFixed(4)}</div>
+        <div>cosh(${x}) = ${coshX.toFixed(4)}</div>
+        <div>tanh(${x}) = ${tanhX.toFixed(4)}</div>
+        <div>coth(${x}) = ${(isFinite(cothX) ? cothX.toFixed(4) : 'Infinity')}</div>
+        <div>sech(${x}) = ${sechX.toFixed(4)}</div>
+        <div>csch(${x}) = ${cschX.toFixed(4)}</div>
+      `;
+
+      document.getElementById('result').innerHTML = resultHTML;
+    }
+  </script>
+
+</body>
+</html>

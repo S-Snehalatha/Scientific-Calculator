@@ -1,0 +1,184 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Simple Arithmetic Calculator</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            height: 100vh;
+            margin: 0;
+            background-color: #f0f0f0;
+        }
+
+        #calculator {
+            border: 5px solid #3498db; /* Broader border color and thickness */
+            border-radius: 10px;
+            background-color: white;
+            box-shadow: 0 0 15px rgba(0, 0, 0, 0.1);
+            padding: 30px;
+            width: 380px; /* Larger width for the calculator */
+            height: 530px; /* Larger height for the calculator */
+        }
+
+        #calculator input {
+            width: 100%;
+            padding: 15px;
+            font-size: 24px; /* Larger font size */
+            margin-bottom: 15px;
+            text-align: right;
+            border: 2px solid #ccc;
+            border-radius: 5px;
+        }
+
+        #result {
+            width: 100%;
+            padding: 15px;
+            font-size: 22px;
+            margin-bottom: 15px;
+            text-align: right;
+            border: 2px solid #ccc;
+            border-radius: 5px;
+            background-color: #f9f9f9;
+            min-height: 50px;
+            color: #333;
+        }
+
+        #calculator button {
+            padding: 15px;
+            font-size: 22px; /* Larger font size */
+            width: 60px; /* Bigger button width */
+            margin: 8px;
+            cursor: pointer;
+            border: none;
+            border-radius: 10px;
+            transition: background-color 0.3s ease;
+        }
+
+        /* Background color for number buttons (ash color) */
+        #calculator button.number {
+            background-color: #d3d3d3; /* Light ash color */
+        }
+
+        /* Background color for operation buttons (light blue) */
+        #calculator button.operation {
+            background-color: #add8e6; /* Light blue */
+        }
+
+        /* Hover effect for buttons */
+        #calculator button:hover {
+            opacity: 0.8;
+        }
+
+        /* Clear button styling */
+        #calculator button.clear {
+            background-color: #ff6347; /* Red for AC button */
+            color: white;
+        }
+
+        /* Equals button styling */
+        #calculator button.equals {
+            background-color: #32cd32; /* Green for Equals button */
+            color: white;
+        }
+
+        /* Backspace button styling */
+        #calculator button.delete {
+            background-color: #ffa500; /* Orange for delete button */
+            color: white;
+        }
+
+        /* Button Grid Layout */
+        .button-container {
+            display: grid;
+            grid-template-columns: repeat(4, 1fr);
+            gap: 10px;
+        }
+
+        /* Make the calculator larger */
+        #calculator {
+            width: 400px; /* Adjusted width */
+            height: auto;
+        }
+    </style>
+</head>
+<body>
+
+    <div id="calculator">
+        <!-- Input field for entering arithmetic expression -->
+        <input type="text" id="display" disabled />
+        
+        <!-- Result Display Box below the input (directly under the question) -->
+        <div id="result">
+            <span id="resultValue"></span>
+        </div>
+
+        <!-- Buttons Grid -->
+        <div class="button-container">
+            <button class="number" onclick="appendToDisplay('7')">7</button>
+            <button class="number" onclick="appendToDisplay('8')">8</button>
+            <button class="number" onclick="appendToDisplay('9')">9</button>
+            <button class="operation" onclick="appendToDisplay('/')">/</button>
+
+            <button class="number" onclick="appendToDisplay('4')">4</button>
+            <button class="number" onclick="appendToDisplay('5')">5</button>
+            <button class="number" onclick="appendToDisplay('6')">6</button>
+            <button class="operation" onclick="appendToDisplay('*')">*</button>
+
+            <button class="number" onclick="appendToDisplay('1')">1</button>
+            <button class="number" onclick="appendToDisplay('2')">2</button>
+            <button class="number" onclick="appendToDisplay('3')">3</button>
+            <button class="operation" onclick="appendToDisplay('-')">-</button>
+
+            <button class="number" onclick="appendToDisplay('0')">0</button>
+            <button class="number" onclick="appendToDisplay('.')">.</button>
+            <button class="clear" onclick="clearDisplay()">AC</button> <!-- All Clear -->
+            <button class="operation" onclick="appendToDisplay('+')">+</button>
+        </div>
+
+        <!-- Special Operations -->
+        <div class="button-container">
+            <button class="equals" onclick="calculate()">=</button> <!-- Equals -->
+            <button class="operation" onclick="appendToDisplay('%')">%</button> <!-- Modulus -->
+            <button class="delete" onclick="deleteLast()">&#9003;</button> <!-- Delete (backspace) -->
+        </div>
+    </div>
+
+    <script>
+        // Append input to display
+        function appendToDisplay(value) {
+            const display = document.getElementById("display");
+            display.value += value;
+        }
+
+        // Clear display (AC - All Clear)
+        function clearDisplay() {
+            const display = document.getElementById("display");
+            display.value = "";
+            document.getElementById("resultValue").textContent = ""; // Clear the result
+        }
+
+        // Calculate result
+        function calculate() {
+            const display = document.getElementById("display");
+            const resultValue = document.getElementById("resultValue");
+            try {
+                resultValue.textContent = eval(display.value); // Use eval for basic calculations
+            } catch (error) {
+                resultValue.textContent = "Error";
+            }
+        }
+
+        // Delete last character (Backspace)
+        function deleteLast() {
+            const display = document.getElementById("display");
+            display.value = display.value.slice(0, -1);
+        }
+    </script>
+
+</body>
+</html>

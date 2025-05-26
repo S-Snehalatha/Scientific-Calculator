@@ -1,0 +1,142 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <title>💪BMI Calculator💪 (kg/m²)</title>
+  <style>
+    body {
+      font-family: Arial, sans-serif;
+      background-color: #eef2f7;
+      margin: 0;
+      padding: 0;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      height: 100vh;
+    }
+
+    .container {
+      background: white;
+      padding: 30px;
+      border-radius: 12px;
+      box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+      width: 360px;
+      text-align: center;
+    }
+
+    h1 {
+      font-size: 24px;
+      margin-bottom: 20px;
+    }
+
+    input[type="number"] {
+      width: 100%;
+      padding: 10px;
+      margin-bottom: 15px;
+      font-size: 16px;
+      border: 2px solid #ccc;
+      border-radius: 6px;
+    }
+
+    .height-inputs {
+      display: flex;
+      gap: 10px;
+    }
+
+    .height-inputs input {
+      flex: 1;
+    }
+
+    button {
+      padding: 10px 20px;
+      background-color: #007bff;
+      color: white;
+      border: none;
+      border-radius: 6px;
+      cursor: pointer;
+      font-size: 16px;
+    }
+
+    button:hover {
+      background-color: #0056b3;
+    }
+
+    .result {
+      margin-top: 20px;
+      font-size: 18px;
+      font-weight: bold;
+    }
+
+    .category {
+      margin-top: 10px;
+      font-style: italic;
+      color: #555;
+    }
+  </style>
+</head>
+<body>
+  <div class="container">
+    <h1>💪BMI Calculator</h1>
+    <input type="number" id="age" placeholder="Enter your age" min="1" />
+    <div class="height-inputs">
+      <input type="number" id="heightFeet" placeholder="Height (ft)" min="0" />
+      <input type="number" id="heightInches" placeholder="Height (in)" min="0" />
+    </div>
+    <input type="number" id="weight" placeholder="Weight (in kg)" min="10" />
+    <button onclick="calculateBMI()">Calculate BMI</button>
+    <div class="result" id="bmiResult"></div>
+    <div class="category" id="bmiCategory"></div>
+  </div>
+
+  <script>
+    function calculateBMI() {
+      const age = parseInt(document.getElementById("age").value);
+      const feet = parseFloat(document.getElementById("heightFeet").value);
+      const inches = parseFloat(document.getElementById("heightInches").value);
+      const weight = parseFloat(document.getElementById("weight").value);
+
+      const resultDiv = document.getElementById("bmiResult");
+      const categoryDiv = document.getElementById("bmiCategory");
+
+      if (
+        isNaN(age) || age <= 0 ||
+        isNaN(feet) || isNaN(inches) || (feet === 0 && inches === 0) ||
+        isNaN(weight) || weight <= 0
+      ) {
+        resultDiv.textContent = "Please enter valid numbers in all fields.";
+        categoryDiv.textContent = "";
+        return;
+      }
+
+      // Convert feet and inches to meters
+      const totalInches = feet * 12 + inches;
+      const heightM = totalInches * 0.0254;
+
+      const bmi = weight / (heightM * heightM);
+
+      resultDiv.textContent = `Your BMI is: ${bmi.toFixed(2)} kg/m²`;
+      categoryDiv.textContent = getBMICategory(bmi, age);
+    }
+
+    function getBMICategory(bmi, age) {
+      let category = "";
+
+      if (bmi < 18.5) {
+        category = "Underweight";
+      } else if (bmi < 25) {
+        category = "Normal weight";
+      } else if (bmi < 30) {
+        category = "Overweight";
+      } else {
+        category = "Obese";
+      }
+
+      if (age < 18) {
+        return `${category} (for youth, consult a pediatrician for accurate assessment)`;
+      }
+
+      return category;
+    }
+  </script>
+</body>
+</html>

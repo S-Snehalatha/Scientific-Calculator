@@ -1,0 +1,204 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <title>Dynamic Matrix Calculator</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <style>
+    body {
+      font-family: Arial, sans-serif;
+      padding: 20px;
+      background: #f9f9f9;
+      text-align: center;
+    }
+
+    h1 {
+      margin-bottom: 10px;
+    }
+
+    select, button {
+      padding: 8px;
+      margin: 10px 5px;
+      font-size: 16px;
+    }
+
+    .matrix-container {
+      display: flex;
+      justify-content: center;
+      gap: 30px;
+      margin-top: 20px;
+      flex-wrap: wrap;
+    }
+
+    .matrix {
+      display: grid;
+      gap: 5px;
+    }
+
+    .matrix input {
+      width: 60px;
+      height: 40px;
+      text-align: center;
+      font-size: 16px;
+    }
+
+    .result {
+      margin-top: 30px;
+    }
+
+    .result-grid {
+      display: grid;
+      gap: 5px;
+      justify-content: center;
+    }
+
+    .result-grid div {
+      background: #fff;
+      padding: 10px;
+      border: 1px solid #ccc;
+      width: 60px;
+      text-align: center;
+    }
+  </style>
+</head>
+<body>
+
+  <h1>Dynamic Matrix Calculator</h1>
+
+  <div>
+    <label>Rows: </label>
+    <select id="rows">
+      <option value="1">1</option>
+      <option value="2" selected>2</option>
+      <option value="3">3</option>
+      <option value="4">4</option>
+      <option value="5">5</option>
+    </select>
+
+    <label>Columns: </label>
+    <select id="cols">
+      <option value="1">1</option>
+      <option value="2" selected>2</option>
+      <option value="3">3</option>
+      <option value="4">4</option>
+      <option value="5">5</option>
+    </select>
+
+    <button onclick="generateMatrices()">Generate Matrices</button>
+  </div>
+
+  <div class="matrix-container">
+    <div>
+      <h3>Matrix A</h3>
+      <div id="matrixA" class="matrix"></div>
+    </div>
+    <div>
+      <h3>Matrix B</h3>
+      <div id="matrixB" class="matrix"></div>
+    </div>
+  </div>
+
+  <div>
+    <button onclick="calculate('add')">Add</button>
+    <button onclick="calculate('subtract')">Subtract</button>
+    <button onclick="calculate('multiply')">Multiply</button>
+  </div>
+
+  <div class="result">
+    <h3>Result</h3>
+    <div id="result" class="result-grid"></div>
+  </div>
+
+  <script>
+    function generateMatrices() {
+      const rows = parseInt(document.getElementById('rows').value);
+      const cols = parseInt(document.getElementById('cols').value);
+
+      const createInputs = (id) => {
+        const container = document.getElementById(id);
+        container.innerHTML = '';
+        container.style.gridTemplateColumns = `repeat(${cols}, 60px)`;
+
+        for (let i = 0; i < rows * cols; i++) {
+          const input = document.createElement('input');
+          input.type = 'number';
+          input.value = '';
+          container.appendChild(input);
+        }
+      };
+
+      createInputs('matrixA');
+      createInputs('matrixB');
+      document.getElementById('result').innerHTML = '';
+    }
+
+    function getMatrix(id, rows, cols) {
+      const inputs = document.getElementById(id).getElementsByTagName('input');
+      let matrix = [];
+      for (let i = 0; i < rows; i++) {
+        let row = [];
+        for (let j = 0; j < cols; j++) {
+          const value = parseFloat(inputs[i * cols + j].value);
+          row.push(isNaN(value) ? 0 : value);
+        }
+        matrix.push(row);
+      }
+      return matrix;
+    }
+
+    function calculate(operation) {
+      const rows = parseInt(document.getElementById('rows').value);
+      const cols = parseInt(document.getElementById('cols').value);
+      const A = getMatrix('matrixA', rows, cols);
+      const B = getMatrix('matrixB', rows, cols);
+      let result = [];
+
+      if ((operation === 'add' || operation === 'subtract') && A.length === B.length && A[0].length === B[0].length) {
+        for (let i = 0; i < rows; i++) {
+          let row = [];
+          for (let j = 0; j < cols; j++) {
+            row.push(operation === 'add' ? A[i][j] + B[i][j] : A[i][j] - B[i][j]);
+          }
+          result.push(row);
+        }
+      } else if (operation === 'multiply' && A[0].length === B.length) {
+        const resRows = A.length;
+        const resCols = B[0].length;
+        for (let i = 0; i < resRows; i++) {
+          let row = [];
+          for (let j = 0; j < resCols; j++) {
+            let sum = 0;
+            for (let k = 0; k < B.length; k++) {
+              sum += A[i][k] * B[k][j];
+            }
+            row.push(sum);
+          }
+          result.push(row);
+        }
+      } else {
+        alert('Matrix dimensions do not match for this operation.');
+        return;
+      }
+
+      displayResult(result);
+    }
+
+    function displayResult(matrix) {
+      const resultDiv = document.getElementById('result');
+      resultDiv.innerHTML = '';
+      resultDiv.style.gridTemplateColumns = `repeat(${matrix[0].length}, 60px)`;
+
+      matrix.forEach(row => {
+        row.forEach(cell => {
+          const div = document.createElement('div');
+          div.textContent = cell;
+          resultDiv.appendChild(div);
+        });
+      });
+    }
+
+    // Generate default 2x2 matrix on load
+    window.onload = generateMatrices;
+  </script>
+</body>
+</html>

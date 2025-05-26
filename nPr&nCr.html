@@ -1,0 +1,161 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Permutation & Combination Calculator</title>
+  <style>
+    body {
+      font-family: Arial, sans-serif;
+      background-color: #eef2f5;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      padding: 40px 20px;
+    }
+
+    .container {
+      background: white;
+      padding: 30px;
+      border-radius: 10px;
+      max-width: 420px;
+      width: 100%;
+      box-shadow: 0 0 15px rgba(0,0,0,0.1);
+    }
+
+    h1 {
+      text-align: center;
+      margin-bottom: 20px;
+      color: #333;
+    }
+
+    label {
+      display: block;
+      margin-top: 15px;
+      font-weight: bold;
+    }
+
+    input {
+      width: 100%;
+      padding: 10px;
+      font-size: 16px;
+      margin-top: 5px;
+      box-sizing: border-box;
+    }
+
+    button {
+      width: 100%;
+      margin-top: 20px;
+      padding: 12px;
+      background-color: #007BFF;
+      color: white;
+      font-size: 16px;
+      border: none;
+      border-radius: 5px;
+      cursor: pointer;
+    }
+
+    button:hover {
+      background-color: #0056b3;
+    }
+
+    .result, .error {
+      margin-top: 20px;
+      text-align: center;
+      font-size: 16px;
+      color: #333;
+    }
+
+    .error {
+      color: red;
+      font-size: 14px;
+    }
+
+    .formula {
+      font-family: monospace;
+      font-size: 14px;
+      margin-top: 10px;
+      color: #555;
+    }
+
+    .value {
+      font-weight: bold;
+      color: #000;
+    }
+  </style>
+</head>
+<body>
+
+  <div class="container">
+    <h1>Permutation & Combination Calculator</h1>
+
+    <label for="n">Enter n (total items):</label>
+    <input type="number" id="n" min="0" placeholder="e.g. 5" />
+
+    <label for="r">Enter r (items selected):</label>
+    <input type="number" id="r" min="0" placeholder="e.g. 3" />
+
+    <button onclick="calculate()">Calculate</button>
+
+    <div class="error" id="error"></div>
+    <div class="result" id="result"></div>
+  </div>
+
+  <script>
+    function factorial(num) {
+      if (num === 0 || num === 1) return 1;
+      let result = 1;
+      for (let i = 2; i <= num; i++) {
+        result *= i;
+      }
+      return result;
+    }
+
+    function calculate() {
+      const n = parseInt(document.getElementById('n').value);
+      const r = parseInt(document.getElementById('r').value);
+      const errorDiv = document.getElementById('error');
+      const resultDiv = document.getElementById('result');
+
+      errorDiv.innerHTML = '';
+      resultDiv.innerHTML = '';
+
+      if (isNaN(n) || isNaN(r)) {
+        errorDiv.textContent = "Please enter valid numbers for both n and r.";
+        return;
+      }
+
+      if (n < 0 || r < 0) {
+        errorDiv.textContent = "Values must be non-negative.";
+        return;
+      }
+
+      if (r > n) {
+        errorDiv.textContent = "r cannot be greater than n.";
+        return;
+      }
+
+      const nFact = factorial(n);
+      const rFact = factorial(r);
+      const nrFact = factorial(n - r);
+
+      const permutation = nFact / nrFact;
+      const combination = nFact / (rFact * nrFact);
+
+      resultDiv.innerHTML = `
+        <div class="value"><strong>Permutation (nPr):</strong> ${permutation}</div>
+        <div class="formula">Formula: nPr = n! / (n - r)!<br> 
+        nPr = ${n}! / (${n} - ${r})! = ${nFact} / ${nrFact} = <strong>${permutation}</strong></div>
+
+        <br>
+
+        <div class="value"><strong>Combination (nCr):</strong> ${combination}</div>
+        <div class="formula">Formula: nCr = n! / [r! × (n - r)!]<br> 
+        nCr = ${n}! / (${r}! × (${n} - ${r})!) = ${nFact} / (${rFact} × ${nrFact}) = 
+        ${nFact} / ${rFact * nrFact} = <strong>${combination}</strong></div>
+      `;
+    }
+  </script>
+
+</body>
+</html>

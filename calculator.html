@@ -1,0 +1,643 @@
+
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>GANAKA Scientific Calculator - Vanilla JS</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <style>
+        body {
+            margin: 0;
+            font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, 'Open Sans', 'Helvetica Neue', sans-serif;
+            -webkit-font-smoothing: antialiased;
+            -moz-osx-font-smoothing: grayscale;
+            background-color: #f1f5f9; /* slate-100 */
+            height: 100vh;
+            overflow: hidden;
+        }
+
+        .app-panel {
+            display: none;
+            animation: fadeIn 0.3s ease-out forwards;
+        }
+
+        .app-panel.active {
+            display: block;
+        }
+
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(10px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+
+        /* Basic scrollbar styling for content areas */
+        .styled-scrollbar::-webkit-scrollbar {
+            width: 8px;
+            height: 8px;
+        }
+        .styled-scrollbar::-webkit-scrollbar-track {
+            background: #f1f5f9; /* slate-100 */
+            border-radius: 10px;
+        }
+        .styled-scrollbar::-webkit-scrollbar-thumb {
+            background: #94a3b8; /* slate-400 */
+            border-radius: 10px;
+        }
+        .styled-scrollbar::-webkit-scrollbar-thumb:hover {
+            background: #64748b; /* slate-500 */
+        }
+    </style>
+<script type="importmap">
+{
+  "imports": {
+    "react": "https://esm.sh/react@^19.1.0",
+    "react-dom/": "https://esm.sh/react-dom@^19.1.0/",
+    "react/": "https://esm.sh/react@^19.1.0/"
+  }
+}
+</script>
+</head>
+<body class="flex h-screen">
+
+    <!-- Sidebar for larger screens (md and up) -->
+    <div id="desktop-sidebar-container" class="hidden md:block fixed top-0 left-0 h-full z-20 shadow-lg bg-slate-800 text-slate-200 md:w-60 lg:w-64 p-4 space-y-1.5">
+        <div class="text-2xl font-bold text-white mb-6 px-2 py-2 border-b border-slate-700">
+            GANAKA
+        </div>
+        <!-- Sidebar items will be populated by JS -->
+    </div>
+
+    <!-- Mobile Sidebar (Drawer-like) -->
+    <div id="mobile-overlay" class="md:hidden fixed inset-0 bg-black bg-opacity-50 z-30 hidden" aria-hidden="true"></div>
+    <div id="mobile-sidebar-container" class="md:hidden fixed top-0 left-0 h-full z-40 transform -translate-x-full transition-transform ease-in-out duration-300 shadow-xl bg-slate-800 text-slate-200 w-64 p-4 space-y-1.5">
+        <div class="text-2xl font-bold text-white mb-6 px-2 py-2 border-b border-slate-700">
+            GANAKA
+        </div>
+        <!-- Mobile Sidebar items will be populated by JS -->
+    </div>
+
+    <!-- Main Content -->
+    <main id="main-content" class="flex-1 md:ml-60 lg:ml-64 p-4 sm:p-6 overflow-y-auto styled-scrollbar">
+        <!-- Top Bar for Mobile Toggle and Right Buttons -->
+        <div class="flex justify-between items-center mb-6 md:mb-0 md:justify-end">
+            <button id="mobile-sidebar-toggle" class="md:hidden p-2 rounded-md text-slate-600 hover:bg-slate-200 focus:outline-none focus:ring-2 focus:ring-sky-500" aria-label="Open sidebar">
+                <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor" class="w-6 h-6">
+                    <path stroke-linecap="round" stroke-linejoin="round" d="M3.75 6.75h16.5M3.75 12h16.5m-16.5 5.25h16.5" />
+                </svg>
+            </button>
+            <div id="top-right-buttons-container" class="flex space-x-2">
+                <!-- Top right buttons will be populated by JS -->
+            </div>
+        </div>
+
+        <div id="panels-container" class="mt-0 md:mt-8">
+            <!-- Home Panel -->
+            <div id="panel-home" class="app-panel bg-white p-6 sm:p-8 rounded-xl shadow-xl">
+                <div class="flex items-center mb-6 pb-4 border-b border-slate-200">
+                    <span id="home-panel-icon" class="text-sky-600 mr-3 text-2xl"></span>
+                    <h2 class="text-2xl sm:text-3xl font-bold text-slate-800">Welcome to GANAKA</h2>
+                </div>
+                <p class="text-lg text-slate-700 mb-8">
+                    Your advanced scientific calculator. Select a function from the sidebar or explore other specialized calculators below.
+                </p>
+                <div class="mb-8">
+                    <h3 class="text-xl font-semibold text-slate-800 mb-4">Other Calculators</h3>
+                    <div id="home-other-calculators" class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
+                        <!-- Links populated by JS -->
+                    </div>
+                </div>
+                <p class="text-sm text-slate-500 mt-10">
+                    Tip: Use the "History" button in the top right to review your past calculations.
+                </p>
+            </div>
+
+            <!-- Trigonometric Panel -->
+            <div id="panel-trig" class="app-panel bg-white p-6 sm:p-8 rounded-xl shadow-xl">
+                <div class="flex items-center mb-6 pb-4 border-b border-slate-200">
+                    <span id="trig-panel-icon" class="text-sky-600 mr-3 text-2xl"></span>
+                    <h2 class="text-2xl sm:text-3xl font-bold text-slate-800">Trigonometric Calculator</h2>
+                </div>
+                <div class="mb-4 w-full">
+                    <label for="trig-angle" class="block text-sm font-medium text-slate-700 mb-1">Angle in degrees</label>
+                    <input id="trig-angle" type="text" placeholder="e.g., 45" class="mt-1 block w-full px-4 py-2.5 border border-slate-300 rounded-lg shadow-sm placeholder-slate-400 focus:outline-none focus:ring-2 focus:ring-sky-500 focus:border-sky-500 sm:text-sm transition duration-150 ease-in-out">
+                </div>
+                <button id="calculate-trig" class="font-semibold rounded-lg shadow-md focus:outline-none focus:ring-2 focus:ring-opacity-75 transition-all duration-150 ease-in-out inline-flex items-center justify-center bg-sky-600 hover:bg-sky-700 text-white focus:ring-sky-500 px-4 py-2 text-base w-full sm:w-auto">Calculate</button>
+                <div id="trig-result" class="mt-6 p-4 bg-slate-50 border border-slate-200 rounded-lg text-slate-700 hidden">
+                    <h3 class="font-semibold text-slate-800 mb-2">Result:</h3>
+                    <div class="text-sm sm:text-base"></div>
+                </div>
+            </div>
+
+            <!-- Inverse Trigonometric Panel -->
+            <div id="panel-invTrig" class="app-panel bg-white p-6 sm:p-8 rounded-xl shadow-xl">
+                <div class="flex items-center mb-6 pb-4 border-b border-slate-200">
+                    <span id="invTrig-panel-icon" class="text-sky-600 mr-3 text-2xl"></span>
+                    <h2 class="text-2xl sm:text-3xl font-bold text-slate-800">Inverse Trigonometric Calculator</h2>
+                </div>
+                <div class="mb-4 w-full">
+                    <label for="invTrig-value" class="block text-sm font-medium text-slate-700 mb-1">Value (-1 to 1)</label>
+                    <input id="invTrig-value" type="text" placeholder="e.g., 0.5" class="mt-1 block w-full px-4 py-2.5 border border-slate-300 rounded-lg shadow-sm placeholder-slate-400 focus:outline-none focus:ring-2 focus:ring-sky-500 focus:border-sky-500 sm:text-sm transition duration-150 ease-in-out">
+                </div>
+                <button id="calculate-invTrig" class="font-semibold rounded-lg shadow-md focus:outline-none focus:ring-2 focus:ring-opacity-75 transition-all duration-150 ease-in-out inline-flex items-center justify-center bg-sky-600 hover:bg-sky-700 text-white focus:ring-sky-500 px-4 py-2 text-base w-full sm:w-auto">Calculate</button>
+                <div id="invTrig-result" class="mt-6 p-4 bg-slate-50 border border-slate-200 rounded-lg text-slate-700 hidden">
+                    <h3 class="font-semibold text-slate-800 mb-2">Result (in degrees):</h3>
+                    <div class="text-sm sm:text-base"></div>
+                </div>
+            </div>
+
+            <!-- Logarithmic Panel (Base 10) -->
+            <div id="panel-log" class="app-panel bg-white p-6 sm:p-8 rounded-xl shadow-xl">
+                <div class="flex items-center mb-6 pb-4 border-b border-slate-200">
+                    <span id="log-panel-icon" class="text-sky-600 mr-3 text-2xl"></span>
+                    <h2 class="text-2xl sm:text-3xl font-bold text-slate-800">Logarithmic Calculator (Base 10)</h2>
+                </div>
+                <div class="mb-4 w-full">
+                    <label for="log-input" class="block text-sm font-medium text-slate-700 mb-1">Enter number</label>
+                    <input id="log-input" type="text" placeholder="e.g., 100" class="mt-1 block w-full px-4 py-2.5 border border-slate-300 rounded-lg shadow-sm placeholder-slate-400 focus:outline-none focus:ring-2 focus:ring-sky-500 focus:border-sky-500 sm:text-sm transition duration-150 ease-in-out">
+                </div>
+                <button id="calculate-log" class="font-semibold rounded-lg shadow-md focus:outline-none focus:ring-2 focus:ring-opacity-75 transition-all duration-150 ease-in-out inline-flex items-center justify-center bg-sky-600 hover:bg-sky-700 text-white focus:ring-sky-500 px-4 py-2 text-base w-full sm:w-auto">Calculate log₁₀</button>
+                <div id="log-result" class="mt-6 p-4 bg-slate-50 border border-slate-200 rounded-lg text-slate-700 hidden">
+                    <h3 class="font-semibold text-slate-800 mb-2">Result:</h3>
+                    <div class="text-sm sm:text-base"></div>
+                </div>
+            </div>
+            
+            <!-- Factorial Panel -->
+             <div id="panel-fact" class="app-panel bg-white p-6 sm:p-8 rounded-xl shadow-xl">
+                <div class="flex items-center mb-6 pb-4 border-b border-slate-200">
+                    <span id="fact-panel-icon" class="text-sky-600 mr-3 text-2xl"></span>
+                    <h2 class="text-2xl sm:text-3xl font-bold text-slate-800">Factorial Calculator (n!)</h2>
+                </div>
+                <div class="mb-4 w-full">
+                    <label for="fact-input" class="block text-sm font-medium text-slate-700 mb-1">Enter non-negative integer (max 20)</label>
+                    <input id="fact-input" type="number" placeholder="e.g., 5" class="mt-1 block w-full px-4 py-2.5 border border-slate-300 rounded-lg shadow-sm placeholder-slate-400 focus:outline-none focus:ring-2 focus:ring-sky-500 focus:border-sky-500 sm:text-sm transition duration-150 ease-in-out">
+                </div>
+                <button id="calculate-fact" class="font-semibold rounded-lg shadow-md focus:outline-none focus:ring-2 focus:ring-opacity-75 transition-all duration-150 ease-in-out inline-flex items-center justify-center bg-sky-600 hover:bg-sky-700 text-white focus:ring-sky-500 px-4 py-2 text-base w-full sm:w-auto">Calculate n!</button>
+                <div id="fact-result" class="mt-6 p-4 bg-slate-50 border border-slate-200 rounded-lg text-slate-700 hidden">
+                    <h3 class="font-semibold text-slate-800 mb-2">Result:</h3>
+                    <div class="text-sm sm:text-base"></div>
+                </div>
+            </div>
+
+            <!-- Square Root Panel -->
+            <div id="panel-sqrt" class="app-panel bg-white p-6 sm:p-8 rounded-xl shadow-xl">
+                <div class="flex items-center mb-6 pb-4 border-b border-slate-200">
+                    <span id="sqrt-panel-icon" class="text-sky-600 mr-3 text-2xl"></span>
+                    <h2 class="text-2xl sm:text-3xl font-bold text-slate-800">Square Root Calculator (√x)</h2>
+                </div>
+                <div class="mb-4 w-full">
+                    <label for="sqrt-input" class="block text-sm font-medium text-slate-700 mb-1">Enter number</label>
+                    <input id="sqrt-input" type="text" placeholder="e.g., 16" class="mt-1 block w-full px-4 py-2.5 border border-slate-300 rounded-lg shadow-sm placeholder-slate-400 focus:outline-none focus:ring-2 focus:ring-sky-500 focus:border-sky-500 sm:text-sm transition duration-150 ease-in-out">
+                </div>
+                <button id="calculate-sqrt" class="font-semibold rounded-lg shadow-md focus:outline-none focus:ring-2 focus:ring-opacity-75 transition-all duration-150 ease-in-out inline-flex items-center justify-center bg-sky-600 hover:bg-sky-700 text-white focus:ring-sky-500 px-4 py-2 text-base w-full sm:w-auto">Calculate √x</button>
+                <div id="sqrt-result" class="mt-6 p-4 bg-slate-50 border border-slate-200 rounded-lg text-slate-700 hidden">
+                    <h3 class="font-semibold text-slate-800 mb-2">Result:</h3>
+                    <div class="text-sm sm:text-base"></div>
+                </div>
+            </div>
+
+            <!-- History Panel -->
+            <div id="panel-history" class="app-panel bg-white p-6 sm:p-8 rounded-xl shadow-xl">
+                <div class="flex items-center mb-6 pb-4 border-b border-slate-200">
+                    <span id="history-panel-icon" class="text-sky-600 mr-3 text-2xl"></span>
+                    <h2 class="text-2xl sm:text-3xl font-bold text-slate-800">Calculation History</h2>
+                </div>
+                <button id="clear-history" class="font-semibold rounded-lg shadow-md focus:outline-none focus:ring-2 focus:ring-opacity-75 transition-all duration-150 ease-in-out inline-flex items-center justify-center bg-red-500 hover:bg-red-600 text-white focus:ring-red-400 px-3 py-1.5 text-sm mb-6">Clear History</button>
+                <ul id="history-list" class="space-y-3 max-h-[60vh] overflow-y-auto pr-2 styled-scrollbar">
+                    <!-- History items will be populated by JS -->
+                </ul>
+                <p id="no-history-message" class="text-slate-500 hidden">No calculations yet. Perform some calculations to see them here.</p>
+            </div>
+
+            <!-- Contact Panel -->
+            <div id="panel-contact" class="app-panel bg-white p-6 sm:p-8 rounded-xl shadow-xl">
+                <a href="contact.html">
+                    <button>CONTACT US</button>
+                </a>
+            </div>
+            
+            <!-- Other panels like exp, ln, cbrt, root would be structured similarly -->
+
+        </div>
+    </main>
+
+<script>
+    document.addEventListener('DOMContentLoaded', () => {
+        // --- DATA & CONSTANTS ---
+        const PanelType = {
+            HOME: 'home', TRIG: 'trig', INV_TRIG: 'invTrig', LOG: 'log', EXP: 'exp',
+            LN: 'ln', FACT: 'fact', SQRT: 'sqrt', CBRT: 'cbrt', ROOT: 'root',
+            CONVERSIONS: 'conversions', CALCULUS: 'calculus', HYPERBOLIC_TRIG: 'hyperbolicTrig',
+            STATISTICS: 'statistics', BMI: 'bmi', HISTORY: 'history', CONTACT: 'contact',
+            ARITHMETIC: 'arithmetic', AGE: 'age', GPA: 'gpa', GRADE: 'grade',
+            LCM_GCD: 'lcmgcd', MATRIX: 'matrix', PERMUTATION_COMBINATION: 'npr_ncr',
+        };
+
+        const ICONS = {
+            Home: '<svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor" class="w-5 h-5"><path stroke-linecap="round" stroke-linejoin="round" d="M2.25 12l8.954-8.955c.44-.439 1.152-.439 1.591 0L21.75 12M4.5 9.75v10.125c0 .621.504 1.125 1.125 1.125H9.75v-4.875c0-.621.504-1.125 1.125-1.125h2.25c.621 0 1.125.504 1.125 1.125V21h4.125c.621 0 1.125-.504 1.125-1.125V9.75M8.25 21h7.5" /></svg>',
+            Calculator: '<svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor" class="w-5 h-5"><path stroke-linecap="round" stroke-linejoin="round" d="M15.75 15.75V18m-7.5-6.75h.008v.008H8.25v-.008Zm0 2.25h.008v.008H8.25v-.008Zm0 2.25h.008v.008H8.25v-.008Zm0 2.25h.008v.008H8.25v-.008Zm2.25-4.5h.008v.008H10.5v-.008Zm0 2.25h.008v.008H10.5v-.008Zm0 2.25h.008v.008H10.5v-.008Zm2.25-4.5h.008v.008H12.75v-.008Zm0 2.25h.008v.008H12.75v-.008Zm0 2.25h.008v.008H12.75v-.008Zm2.25-6.75h.008v.008H15v-.008Zm0 2.25h.008v.008H15v-.008Zm0 2.25h.008v.008H15v-.008Zm2.25-15.75a48.474 48.474 0 00-2.25-1.125C14.256 1.5 12.849 1.5 12 1.5s-2.256 0-3 .375A48.47 48.47 0 006.75 3H4.5a2.25 2.25 0 00-2.25 2.25v13.5A2.25 2.25 0 004.5 21h15a2.25 2.25 0 002.25-2.25V5.25a2.25 2.25 0 00-2.25-2.25H17.25Z" /></svg>',
+            ArrowPath: '<svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor" class="w-5 h-5"><path stroke-linecap="round" stroke-linejoin="round" d="M16.023 9.348h4.992v-.001M2.985 19.644v-4.992m0 0h4.992m-4.993 0l3.181 3.183a8.25 8.25 0 0013.803-3.7M4.031 9.865a8.25 8.25 0 0113.803-3.7l3.181 3.182m0-4.991v4.99" /></svg>',
+            ChartBar: '<svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor" class="w-5 h-5"><path stroke-linecap="round" stroke-linejoin="round" d="M3 13.125C3 12.504 3.504 12 4.125 12h2.25c.621 0 1.125.504 1.125 1.125v6.75C7.5 20.496 6.996 21 6.375 21h-2.25A1.125 1.125 0 013 19.875v-6.75ZM9.75 8.625c0-.621.504-1.125 1.125-1.125h2.25c.621 0 1.125.504 1.125 1.125v11.25c0 .621-.504 1.125-1.125 1.125h-2.25a1.125 1.125 0 01-1.125-1.125V8.625ZM16.5 4.125c0-.621.504-1.125 1.125-1.125h2.25C20.496 3 21 3.504 21 4.125v15.75c0 .621-.504 1.125-1.125 1.125h-2.25a1.125 1.125 0 01-1.125-1.125V4.125Z" /></svg>',
+            Bolt: '<svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor" class="w-5 h-5"><path stroke-linecap="round" stroke-linejoin="round" d="M3.75 13.5l10.5-11.25L12 10.5h8.25L9.75 21.75 12 13.5H3.75z" /></svg>',
+            FunctionIcon: '<svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor" class="w-5 h-5"><path stroke-linecap="round" stroke-linejoin="round" d="M7.5 21 3 16.5m0 0L7.5 12M3 16.5h18" /></svg>',
+            ExclamationTriangle: '<svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor" class="w-5 h-5"><path stroke-linecap="round" stroke-linejoin="round" d="M12 9v3.75m-9.303 3.376c-.866 1.5.217 3.374 1.948 3.374h14.71c1.73 0 2.813-1.874 1.948-3.374L13.949 3.378c-.866-1.5-3.032-1.5-3.898 0L2.697 16.126ZM12 15.75h.007v.008H12v-.008Z" /></svg>',
+            CubeTransparent: '<svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor" class="w-5 h-5"><path stroke-linecap="round" stroke-linejoin="round" d="M21 7.5l-9-5.25L3 7.5m18 0l-9 5.25m9-5.25v9l-9 5.25M3 7.5l9 5.25M3 7.5v9l9 5.25m0-9v9" /></svg>',
+            History: '<svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor" class="w-5 h-5"><path stroke-linecap="round" stroke-linejoin="round" d="M12 6.042A8.967 8.967 0 006 3.75c-1.052 0-2.062.18-3 .512v14.25A8.987 8.987 0 016 18c2.305 0 4.408.867 6 2.292m0-14.25a8.966 8.966 0 016-2.292c1.052 0 2.062.18 3 .512v14.25A8.987 8.987 0 0018 18a8.967 8.967 0 00-6 2.292m0-14.25v14.25" /></svg>',
+            Envelope: '<svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor" class="w-5 h-5"><path stroke-linecap="round" stroke-linejoin="round" d="M21.75 6.75v10.5a2.25 2.25 0 01-2.25 2.25h-15a2.25 2.25 0 01-2.25-2.25V6.75m19.5 0A2.25 2.25 0 0019.5 4.5h-15a2.25 2.25 0 00-2.25 2.25m19.5 0v.243a2.25 2.25 0 01-1.07 1.916l-7.5 4.615a2.25 2.25 0 01-2.36 0L3.32 8.91a2.25 2.25 0 01-1.07-1.916V6.75" /></svg>',
+            User: '<svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor" class="w-5 h-5"><path stroke-linecap="round" stroke-linejoin="round" d="M15.75 6a3.75 3.75 0 11-7.5 0 3.75 3.75 0 017.5 0zM4.501 20.118a7.5 7.5 0 0114.998 0A17.933 17.933 0 0112 21.75c-2.676 0-5.216-.584-7.499-1.632z" /></svg>',
+            AcademicCap: '<svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor" class="w-5 h-5"><path stroke-linecap="round" stroke-linejoin="round" d="M4.26 10.147a60.438 60.438 0 00-.491 6.347A48.627 48.627 0 0112 20.904a48.627 48.627 0 018.232-4.41 60.46 60.46 0 00-.491-6.347m-15.482 0a50.57 50.57 0 00-2.658-.813A59.906 59.906 0 0112 3.493a59.903 59.903 0 0110.399 5.84c-.896.248-1.783.52-2.658.814m-15.482 0A50.697 50.697 0 0112 13.489a50.702 50.702 0 017.74-3.342M6.75 15a.75.75 0 100-1.5.75.75 0 000 1.5zm0 0v-3.675A55.378 55.378 0 0112 8.443m-7.007 11.55A5.981 5.981 0 006.75 15.75v-1.5" /></svg>',
+            SquaresPlus: '<svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor" class="w-5 h-5"><path stroke-linecap="round" stroke-linejoin="round" d="M13.5 16.875h3.375m0 0h3.375m-3.375 0V13.5m0 3.375v3.375M6 10.5h2.25a2.25 2.25 0 002.25-2.25V6a2.25 2.25 0 00-2.25-2.25H6A2.25 2.25 0 003.75 6v2.25A2.25 2.25 0 006 10.5zm0 9.75h2.25A2.25 2.25 0 0010.5 18v-2.25a2.25 2.25 0 00-2.25-2.25H6a2.25 2.25 0 00-2.25 2.25V18A2.25 2.25 0 006 20.25zm9.75-9.75H18a2.25 2.25 0 002.25-2.25V6A2.25 2.25 0 0018 3.75h-2.25A2.25 2.25 0 0013.5 6v2.25a2.25 2.25 0 002.25 2.25z" /></svg>',
+            Beaker: '<svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor" class="w-5 h-5"><path stroke-linecap="round" stroke-linejoin="round" d="M14.25 6.087c0-.59-.477-1.067-1.066-1.067H10.816c-.59 0-1.067.477-1.067 1.067v1.513c0 .59.477 1.067 1.067 1.067h2.368c.59 0 1.066-.477 1.066-1.067v-1.513Zm-2.53 12.635L6.22 6.722a.75.75 0 01.29-.997l.903-.583a.75.75 0 01.997.29l3.665 5.682a.75.75 0 00.997.29l.903-.583a.75.75 0 00.29-.997L9.78 3.222a.75.75 0 01.997-.29l3.666 5.682a.75.75 0 00.997.29L16.343 8.22a.75.75 0 00.29-.997L12.137 1.54a.75.75 0 01.29-.997l.903-.583a.75.75 0 01.997.29L18 5.934V3.75a.75.75 0 01.75-.75h.008a.75.75 0 01.75.75v10.942c0 .477-.239.924-.633 1.201l-5.582 3.986c-.53.379-1.267.379-1.796 0l-5.582-3.986A1.783 1.783 0 013 14.692V4.5a.75.75 0 01.75-.75h.722c.46 0 .882.237 1.13.625L7.5 6.75l2.053-3.182a.75.75 0 01.997-.29l.903.583a.75.75 0 01.29.997L9.69 7.934l2.53 3.913v5.87Z" /></svg>',
+            ArrowsRightLeft: '<svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor" class="w-5 h-5"><path stroke-linecap="round" stroke-linejoin="round" d="M7.5 21 3 16.5m0 0L7.5 12M3 16.5h18M16.5 3l4.5 4.5m0 0L16.5 12m4.5-4.5H3" /></svg>',
+            Scale: '<svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor" class="w-5 h-5"><path stroke-linecap="round" stroke-linejoin="round" d="M12 3v17.25m0 0c-1.472 0-2.882.265-4.185.75M12 20.25c1.472 0 2.882.265 4.185.75M18.75 4.97A48.416 48.416 0 0012 4.5c-2.291 0-4.545.16-6.75.47m13.5 0c1.01.143 2.01.317 3 .52m-3-.52c2.625.962 4.5 3.623 4.5 6.75v.375c0 3.127-1.875 5.788-4.5 6.75m-13.5-13.5c-1.01.143-2.01.317-3 .52m3-.52c-2.625.962-4.5 3.623-4.5 6.75v.375c0 3.127 1.875 5.788 4.5 6.75m0 0v-1.5m0 1.5c-1.472 0-2.882.265-4.185.75M5.25 17.25c1.472 0 2.882.265 4.185.75M12 20.25c-1.472 0-2.882.265-4.185.75m7.5-1.5c1.472 0 2.882.265 4.185.75M12 4.5c1.472 0 2.882-.265 4.185-.75M12 4.5c-1.472 0-2.882-.265-4.185-.75M12 3V1.5m0 1.5V3m0 14.25V15m0 2.25V15m0 5.25V21m0-5.25V21" /></svg>',
+        };
+
+        const SIDEBAR_NAV_ITEMS = [
+            { id: PanelType.HOME, label: 'Home', icon: ICONS.Home },
+            { id: PanelType.TRIG, label: 'Trigonometric', icon: ICONS.Calculator },
+            { id: PanelType.INV_TRIG, label: 'Inverse Trig', icon: ICONS.ArrowPath },
+            { id: PanelType.LOG, label: 'Logarithms', icon: ICONS.ChartBar },
+            { id: PanelType.EXP, label: 'Exponential', icon: ICONS.Bolt },
+            { id: PanelType.LN, label: 'Natural Log (ln)', icon: ICONS.FunctionIcon },
+            { id: PanelType.FACT, label: 'Factorial', icon: ICONS.ExclamationTriangle },
+            { id: PanelType.SQRT, label: 'Square Root', icon: ICONS.CubeTransparent },
+            { id: PanelType.CBRT, label: 'Cube Root', icon: ICONS.CubeTransparent },
+            { id: PanelType.ROOT, label: 'Nth Root', icon: ICONS.CubeTransparent },
+        ];
+
+        const TOP_RIGHT_NAV_ITEMS = [
+            { id: PanelType.HISTORY, label: 'History', icon: ICONS.History },
+            { id: PanelType.CONTACT, label: 'Contact Us', icon: ICONS.Envelope },
+        ];
+        
+        const HOME_PAGE_LINKS = [
+            { id: PanelType.ARITHMETIC, label: 'Arithmetic Calculator', icon: ICONS.Calculator, href: 'all.html' },
+            { id: PanelType.AGE, label: 'Age Calculator', icon: ICONS.User, href: 'age.html' },
+            { id: PanelType.GPA, label: 'GPA Calculator', icon: ICONS.AcademicCap, href: 'gpa.html' },
+            { id: PanelType.GRADE, label: 'Grade Calculator', icon: ICONS.AcademicCap, href: 'grade.html' },
+            { id: PanelType.LCM_GCD, label: 'LCM & GCD Calculator', icon: ICONS.SquaresPlus, href: 'lcmgcd.html' },
+            { id: PanelType.MATRIX, label: 'Matrix Calculator', icon: ICONS.SquaresPlus, href: 'matrix.html' },
+            { id: PanelType.PERMUTATION_COMBINATION, label: 'Permutation & Combination', icon: ICONS.Beaker, href: 'nPr&nCr.html' },
+            { id: PanelType.CONVERSIONS, label: 'Conversions', icon: ICONS.ArrowsRightLeft, href: 'allcon.html' },
+            { id: PanelType.CALCULUS, label: 'Calculus', icon: ICONS.AcademicCap, href: 'inte.html' }, // Main link
+            { id: PanelType.HYPERBOLIC_TRIG, label: 'Hyperbolic Trig', icon: ICONS.Beaker, href: 'hyper.html' },
+            { id: PanelType.STATISTICS, label: 'Statistics', icon: ICONS.ChartBar, href: 'stat.html' },
+            { id: PanelType.BMI, label: 'BMI Calculator', icon: ICONS.Scale, href: 'bmi.html' },
+        ];
+
+
+        let activePanelId = PanelType.HOME;
+        let calculationHistory = []; // {id, calculation, result, timestamp}
+
+        // --- DOM Elements ---
+        const desktopSidebarContainer = document.getElementById('desktop-sidebar-container');
+        const mobileSidebarContainer = document.getElementById('mobile-sidebar-container');
+        const mobileOverlay = document.getElementById('mobile-overlay');
+        const mobileSidebarToggle = document.getElementById('mobile-sidebar-toggle');
+        const topRightButtonsContainer = document.getElementById('top-right-buttons-container');
+        const panelsContainer = document.getElementById('panels-container');
+        const allPanels = Array.from(panelsContainer.querySelectorAll('.app-panel'));
+
+        // Panel specific elements
+        const homePanelIcon = document.getElementById('home-panel-icon');
+        const homeOtherCalculatorsContainer = document.getElementById('home-other-calculators');
+        
+        const trigPanelIcon = document.getElementById('trig-panel-icon');
+        const trigAngleInput = document.getElementById('trig-angle');
+        const calculateTrigButton = document.getElementById('calculate-trig');
+        const trigResultDiv = document.getElementById('trig-result');
+
+        const invTrigPanelIcon = document.getElementById('invTrig-panel-icon');
+        const invTrigValueInput = document.getElementById('invTrig-value');
+        const calculateInvTrigButton = document.getElementById('calculate-invTrig');
+        const invTrigResultDiv = document.getElementById('invTrig-result');
+
+        const logPanelIcon = document.getElementById('log-panel-icon');
+        const logInput = document.getElementById('log-input');
+        const calculateLogButton = document.getElementById('calculate-log');
+        const logResultDiv = document.getElementById('log-result');
+
+        const factPanelIcon = document.getElementById('fact-panel-icon');
+        const factInput = document.getElementById('fact-input');
+        const calculateFactButton = document.getElementById('calculate-fact');
+        const factResultDiv = document.getElementById('fact-result');
+
+        const sqrtPanelIcon = document.getElementById('sqrt-panel-icon');
+        const sqrtInput = document.getElementById('sqrt-input');
+        const calculateSqrtButton = document.getElementById('calculate-sqrt');
+        const sqrtResultDiv = document.getElementById('sqrt-result');
+
+        const historyPanelIcon = document.getElementById('history-panel-icon');
+        const historyListUl = document.getElementById('history-list');
+        const clearHistoryButton = document.getElementById('clear-history');
+        const noHistoryMessage = document.getElementById('no-history-message');
+
+        const contactPanelIcon = document.getElementById('contact-panel-icon');
+        const contactNameInput = document.getElementById('contactName');
+        const contactEmailInput = document.getElementById('contactEmail');
+        const contactMessageTextarea = document.getElementById('contactMessage');
+        const submitContactButton = document.getElementById('submit-contact');
+        const contactFeedbackP = document.getElementById('contact-feedback');
+
+
+        // --- UI FUNCTIONS ---
+        function showPanel(panelId) {
+            allPanels.forEach(panel => {
+                panel.classList.remove('active');
+            });
+            const targetPanel = document.getElementById(`panel-${panelId}`);
+            if (targetPanel) {
+                targetPanel.classList.add('active');
+            }
+            activePanelId = panelId;
+            updateSidebarActiveState();
+            // Close mobile sidebar if open
+            if (mobileSidebarContainer.classList.contains('translate-x-0')) {
+                toggleMobileSidebar();
+            }
+        }
+
+        function updateSidebarActiveState() {
+            const allSidebarButtons = document.querySelectorAll('.sidebar-nav-button');
+            allSidebarButtons.forEach(button => {
+                if (button.dataset.panelid === activePanelId) {
+                    button.classList.add('bg-sky-600', 'text-white', 'shadow-md');
+                    button.classList.remove('hover:bg-slate-700', 'hover:text-white');
+                } else {
+                    button.classList.remove('bg-sky-600', 'text-white', 'shadow-md');
+                    button.classList.add('hover:bg-slate-700', 'hover:text-white');
+                }
+            });
+        }
+        
+        function populateSidebars() {
+            [desktopSidebarContainer, mobileSidebarContainer].forEach(container => {
+                // Clear existing buttons except the title
+                const buttons = container.querySelectorAll('.sidebar-nav-button');
+                buttons.forEach(b => b.remove());
+
+                SIDEBAR_NAV_ITEMS.forEach(item => {
+                    const button = document.createElement('button');
+                    button.dataset.panelid = item.id;
+                    button.className = `sidebar-nav-button w-full flex items-center space-x-3 px-3 py-2.5 rounded-lg text-sm font-medium transition-all duration-150 ease-in-out`;
+                    button.innerHTML = `
+                        <span class="w-5 h-5">${item.icon}</span>
+                        <span>${item.label}</span>
+                    `;
+                    button.onclick = () => showPanel(item.id);
+                    container.appendChild(button);
+                });
+            });
+        }
+
+        function populateTopRightButtons() {
+            topRightButtonsContainer.innerHTML = ''; // Clear existing
+            TOP_RIGHT_NAV_ITEMS.forEach(item => {
+                // Button for larger screens (sm and up)
+                const buttonLg = document.createElement('button');
+                buttonLg.dataset.panelid = item.id;
+                buttonLg.title = item.label;
+                buttonLg.className = `sidebar-nav-button font-semibold rounded-lg shadow-md focus:outline-none focus:ring-2 focus:ring-opacity-75 transition-all duration-150 ease-in-out items-center px-3 py-1.5 text-sm hidden sm:inline-flex ${activePanelId === item.id ? 'bg-sky-600 text-white' : 'bg-slate-200 hover:bg-slate-300 text-slate-700 focus:ring-slate-400'}`;
+                buttonLg.innerHTML = `
+                    ${item.icon}
+                    <span class="ml-1.5 hidden lg:inline">${item.label}</span>
+                `;
+                buttonLg.onclick = () => showPanel(item.id);
+                topRightButtonsContainer.appendChild(buttonLg);
+
+                // Icon-only button for very small screens (xs)
+                const buttonSm = document.createElement('button');
+                buttonSm.dataset.panelid = item.id;
+                buttonSm.title = item.label;
+                buttonSm.className = `sidebar-nav-button font-semibold rounded-lg shadow-md focus:outline-none focus:ring-2 focus:ring-opacity-75 transition-all duration-150 ease-in-out items-center justify-center p-2 text-sm sm:hidden ${activePanelId === item.id ? 'bg-sky-600 text-white' : 'bg-slate-200 hover:bg-slate-300 text-slate-700 focus:ring-slate-400'}`;
+                buttonSm.innerHTML = item.icon;
+                buttonSm.onclick = () => showPanel(item.id);
+                topRightButtonsContainer.appendChild(buttonSm);
+            });
+        }
+
+        function toggleMobileSidebar() {
+            mobileSidebarContainer.classList.toggle('-translate-x-full');
+            mobileSidebarContainer.classList.toggle('translate-x-0');
+            mobileOverlay.classList.toggle('hidden');
+        }
+
+        function populateHomeOtherCalculators() {
+            homeOtherCalculatorsContainer.innerHTML = '';
+            HOME_PAGE_LINKS.forEach(link => {
+                const anchor = document.createElement('a');
+                anchor.href = link.href;
+                anchor.target = "_blank";
+                anchor.rel = "noopener noreferrer";
+                anchor.className = "block";
+                anchor.innerHTML = `
+                    <button class="font-semibold rounded-lg shadow-md focus:outline-none focus:ring-2 focus:ring-opacity-75 transition-all duration-150 ease-in-out inline-flex items-center justify-start bg-slate-200 hover:bg-slate-300 text-slate-700 focus:ring-slate-400 px-4 py-2 text-base w-full">
+                        <span class="mr-2">${link.icon}</span>
+                        ${link.label}
+                    </button>
+                `;
+                homeOtherCalculatorsContainer.appendChild(anchor);
+            });
+        }
+
+        function setPanelIcons() {
+            if(homePanelIcon) homePanelIcon.innerHTML = ICONS.Home;
+            if(trigPanelIcon) trigPanelIcon.innerHTML = ICONS.Calculator;
+            if(invTrigPanelIcon) invTrigPanelIcon.innerHTML = ICONS.ArrowPath;
+            if(logPanelIcon) logPanelIcon.innerHTML = ICONS.ChartBar;
+            if(factPanelIcon) factPanelIcon.innerHTML = ICONS.ExclamationTriangle;
+            if(sqrtPanelIcon) sqrtPanelIcon.innerHTML = ICONS.CubeTransparent;
+            if(historyPanelIcon) historyPanelIcon.innerHTML = ICONS.History;
+            if(contactPanelIcon) contactPanelIcon.innerHTML = ICONS.Envelope;
+        }
+
+        // --- CALCULATION & HISTORY LOGIC ---
+        function addToHistory(calculation, resultText) {
+            calculationHistory.unshift({
+                id: Date.now().toString(),
+                calculation: calculation,
+                result: resultText,
+                timestamp: new Date()
+            });
+            if (calculationHistory.length > 50) {
+                calculationHistory.pop();
+            }
+            renderHistory();
+        }
+
+        function renderHistory() {
+            historyListUl.innerHTML = '';
+            if (calculationHistory.length === 0) {
+                noHistoryMessage.classList.remove('hidden');
+                clearHistoryButton.classList.add('hidden');
+            } else {
+                noHistoryMessage.classList.add('hidden');
+                clearHistoryButton.classList.remove('hidden');
+                calculationHistory.forEach(entry => {
+                    const li = document.createElement('li');
+                    li.className = 'p-4 bg-slate-50 border border-slate-200 rounded-lg shadow-sm';
+                    li.innerHTML = `
+                        <p class="text-xs text-slate-400 mb-1">${entry.timestamp.toLocaleString()}</p>
+                        <p class="font-medium text-slate-700"><span class="font-semibold">Calc:</span> ${entry.calculation}</p>
+                        <div class="text-sky-700 font-semibold mt-1"><span class="font-semibold text-slate-700">Result:</span> ${entry.result}</div>
+                    `;
+                    historyListUl.appendChild(li);
+                });
+            }
+        }
+
+        function handleClearHistory() {
+            calculationHistory = [];
+            renderHistory();
+        }
+
+        function displayCalculationResult(resultDiv, resultHTML) {
+            const contentDiv = resultDiv.querySelector('div');
+            contentDiv.innerHTML = resultHTML;
+            resultDiv.classList.remove('hidden');
+        }
+        
+        function displayError(resultDiv, errorMessage) {
+            const contentDiv = resultDiv.querySelector('div');
+            contentDiv.innerHTML = `<span class="text-red-500">${errorMessage}</span>`;
+            resultDiv.classList.remove('hidden');
+        }
+
+
+        // --- SPECIFIC PANEL LOGIC ---
+
+        // Trigonometric
+        calculateTrigButton.addEventListener('click', () => {
+            const angleStr = trigAngleInput.value;
+            const numAngle = parseFloat(angleStr);
+            if (isNaN(numAngle)) {
+                displayError(trigResultDiv, "Please enter a valid angle.");
+                return;
+            }
+            const rad = numAngle * (Math.PI / 180);
+            const sinVal = Math.sin(rad).toFixed(4);
+            const cosVal = Math.cos(rad).toFixed(4);
+            const tanVal = Math.tan(rad).toFixed(4);
+            const resultHTML = `sin(${numAngle}°) = ${sinVal}<br>cos(${numAngle}°) = ${cosVal}<br>tan(${numAngle}°) = ${tanVal}`;
+            displayCalculationResult(trigResultDiv, resultHTML);
+            addToHistory(`Trig(${numAngle}°)`, resultHTML);
+        });
+
+        // Inverse Trigonometric
+        calculateInvTrigButton.addEventListener('click', () => {
+            const valueStr = invTrigValueInput.value;
+            const numValue = parseFloat(valueStr);
+            if (isNaN(numValue) || numValue < -1 || numValue > 1) {
+                displayError(invTrigResultDiv, "Please enter a value between -1 and 1.");
+                return;
+            }
+            const asinVal = (Math.asin(numValue) * (180 / Math.PI)).toFixed(4);
+            const acosVal = (Math.acos(numValue) * (180 / Math.PI)).toFixed(4);
+            const atanVal = (Math.atan(numValue) * (180 / Math.PI)).toFixed(4);
+            const resultHTML = `arcsin(${numValue}) = ${asinVal}°<br>arccos(${numValue}) = ${acosVal}°<br>arctan(${numValue}) = ${atanVal}° (Principal value)`;
+            displayCalculationResult(invTrigResultDiv, resultHTML);
+            addToHistory(`InvTrig(${numValue})`, resultHTML);
+        });
+
+        // Logarithmic (Base 10)
+        calculateLogButton.addEventListener('click', () => {
+            const valueStr = logInput.value;
+            const numValue = parseFloat(valueStr);
+            if (isNaN(numValue) || numValue <= 0) {
+                displayError(logResultDiv, "Enter a positive number.");
+                return;
+            }
+            const logVal = Math.log10(numValue).toFixed(4);
+            const resultHTML = `log₁₀(${numValue}) = ${logVal}`;
+            displayCalculationResult(logResultDiv, resultHTML);
+            addToHistory(`log₁₀(${numValue})`, resultHTML);
+        });
+
+        // Factorial
+        calculateFactButton.addEventListener('click', () => {
+            const numStr = factInput.value;
+            const num = parseInt(numStr, 10);
+            if (isNaN(num) || num < 0 || !Number.isInteger(num)) {
+                displayError(factResultDiv, "Enter a non-negative integer.");
+                return;
+            }
+            if (num > 20) {
+                displayError(factResultDiv, "Number too large for precise calculation here (max 20).");
+                return;
+            }
+            let factVal = 1;
+            for (let i = 2; i <= num; i++) factVal *= i;
+            const resultHTML = `${num}! = ${factVal.toLocaleString()}`;
+            displayCalculationResult(factResultDiv, resultHTML);
+            addToHistory(`${num}!`, resultHTML);
+        });
+        
+        // Square Root
+        calculateSqrtButton.addEventListener('click', () => {
+            const numStr = sqrtInput.value;
+            const num = parseFloat(numStr);
+            if (isNaN(num) || num < 0) {
+                displayError(sqrtResultDiv, "Invalid input. Enter a non-negative number.");
+                return;
+            }
+            const sqrtVal = Math.sqrt(num).toFixed(4);
+            const resultHTML = `√${num} = ${sqrtVal}`;
+            displayCalculationResult(sqrtResultDiv, resultHTML);
+            addToHistory(`√${num}`, resultHTML);
+        });
+
+
+        // History Panel
+        clearHistoryButton.addEventListener('click', handleClearHistory);
+        
+        // Contact Panel
+        submitContactButton.addEventListener('click', () => {
+            const name = contactNameInput.value.trim();
+            const email = contactEmailInput.value.trim();
+            const message = contactMessageTextarea.value.trim();
+
+            contactFeedbackP.classList.remove('hidden', 'text-green-600', 'text-red-500');
+
+            if (!name || !email || !message) {
+                contactFeedbackP.textContent = 'Please fill all fields.';
+                contactFeedbackP.classList.add('text-red-500');
+                return;
+            }
+            if (!/\S+@\S+\.\S+/.test(email)) {
+                contactFeedbackP.textContent = 'Please enter a valid email address.';
+                contactFeedbackP.classList.add('text-red-500');
+                return;
+            }
+            
+            console.log('Contact Form Submitted (Simulated):', { name, email, message });
+            contactFeedbackP.textContent = 'Message sent successfully! (Simulated)';
+            contactFeedbackP.classList.add('text-green-600');
+            
+            contactNameInput.value = '';
+            contactEmailInput.value = '';
+            contactMessageTextarea.value = '';
+
+            setTimeout(() => {
+                contactFeedbackP.classList.add('hidden');
+            }, 3000);
+        });
+
+
+        // --- INITIALIZATION ---
+        mobileSidebarToggle.addEventListener('click', toggleMobileSidebar);
+        mobileOverlay.addEventListener('click', toggleMobileSidebar);
+        
+        populateSidebars();
+        populateTopRightButtons();
+        populateHomeOtherCalculators();
+        setPanelIcons();
+        
+        showPanel(PanelType.HOME); // Show home panel by default
+        renderHistory(); // Initial render for history (likely empty)
+    });
+</script>
+
+</body>
+</html>
+

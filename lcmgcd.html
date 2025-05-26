@@ -1,0 +1,125 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>LCM & HCF Calculator</title>
+  <style>
+    body {
+      font-family: Arial, sans-serif;
+      background: #f2f2f2;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      padding: 40px 20px;
+    }
+
+    h1 {
+      color: #333;
+      margin-bottom: 20px;
+    }
+
+    .container {
+      background: white;
+      padding: 25px;
+      border-radius: 10px;
+      box-shadow: 0 0 15px rgba(0,0,0,0.1);
+      max-width: 400px;
+      width: 100%;
+    }
+
+    input[type="text"] {
+      width: 100%;
+      padding: 10px;
+      font-size: 16px;
+      margin: 10px 0 20px 0;
+      box-sizing: border-box;
+    }
+
+    button {
+      width: 100%;
+      padding: 12px;
+      background-color: #007BFF;
+      color: white;
+      font-size: 16px;
+      border: none;
+      border-radius: 5px;
+      cursor: pointer;
+    }
+
+    button:hover {
+      background-color: #0056b3;
+    }
+
+    .result {
+      margin-top: 20px;
+      font-size: 18px;
+      color: #333;
+      text-align: center;
+    }
+
+    .instructions {
+      font-size: 14px;
+      color: #555;
+      margin-top: -10px;
+      margin-bottom: 10px;
+      text-align: center;
+    }
+  </style>
+</head>
+<body>
+  <h1>LCM & HCF Calculator</h1>
+  <div class="container">
+    <label for="numbers">Enter numbers (comma-separated):</label>
+    <input type="text" id="numbers" placeholder="e.g. 12, 18, 24">
+    <div class="instructions">(Enter 2 or more numbers separated by commas)</div>
+    <button onclick="calculate()">Calculate</button>
+    <div class="result" id="output"></div>
+  </div>
+
+  <script>
+    function gcd(a, b) {
+      while (b !== 0) {
+        [a, b] = [b, a % b];
+      }
+      return a;
+    }
+
+    function lcm(a, b) {
+      return (a * b) / gcd(a, b);
+    }
+
+    function calculate() {
+      const input = document.getElementById('numbers').value;
+      const output = document.getElementById('output');
+
+      const values = input
+        .split(',')
+        .map(n => parseInt(n.trim()))
+        .filter(n => !isNaN(n) && n > 0);
+
+      if (values.length < 2) {
+        output.textContent = 'Please enter at least two positive numbers.';
+        return;
+      }
+
+      // Calculate HCF
+      let hcf = values[0];
+      for (let i = 1; i < values.length; i++) {
+        hcf = gcd(hcf, values[i]);
+      }
+
+      // Calculate LCM
+      let lcmResult = values[0];
+      for (let i = 1; i < values.length; i++) {
+        lcmResult = lcm(lcmResult, values[i]);
+      }
+
+      output.innerHTML = `
+        <strong>HCF (GCD):</strong> ${hcf}<br>
+        <strong>LCM:</strong> ${lcmResult}
+      `;
+    }
+  </script>
+</body>
+</html>

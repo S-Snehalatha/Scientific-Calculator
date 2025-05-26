@@ -1,0 +1,127 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Statistics Calculator</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            background-color: #f0f2f5;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            height: 100vh;
+            margin: 0;
+        }
+
+        .container {
+            background-color: white;
+            padding: 30px;
+            border-radius: 12px;
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+            width: 400px;
+            text-align: center;
+        }
+
+        h1 {
+            font-size: 24px;
+            margin-bottom: 20px;
+        }
+
+        input[type="text"] {
+            width: 100%;
+            padding: 12px;
+            font-size: 16px;
+            border: 2px solid #ccc;
+            border-radius: 6px;
+            margin-bottom: 15px;
+        }
+
+        button {
+            padding: 10px 20px;
+            font-size: 16px;
+            background-color: #007BFF;
+            color: white;
+            border: none;
+            border-radius: 6px;
+            cursor: pointer;
+        }
+
+        button:hover {
+            background-color: #0056b3;
+        }
+
+        .result {
+            margin-top: 20px;
+            text-align: left;
+        }
+
+        .result p {
+            margin: 6px 0;
+            font-weight: bold;
+        }
+    </style>
+</head>
+<body>
+
+<div class="container">
+    <h1>📊 Statistics Calculator</h1>
+    <input type="text" id="numberInput" placeholder="Enter numbers separated by commas (e.g., 1,2,3)">
+    <button onclick="calculateStats()">Calculate</button>
+    <div class="result" id="results"></div>
+</div>
+
+<script>
+    function calculateStats() {
+        const input = document.getElementById('numberInput').value;
+        const numbers = input.split(',').map(num => parseFloat(num.trim())).filter(num => !isNaN(num));
+
+        if (numbers.length === 0) {
+            document.getElementById('results').innerHTML = "<p>Please enter valid numbers.</p>";
+            return;
+        }
+
+        const mean = numbers.reduce((a, b) => a + b, 0) / numbers.length;
+
+        const sorted = [...numbers].sort((a, b) => a - b);
+        const mid = Math.floor(sorted.length / 2);
+        const median = sorted.length % 2 === 0 ?
+            (sorted[mid - 1] + sorted[mid]) / 2 :
+            sorted[mid];
+
+        const frequency = {};
+        let maxFreq = 0;
+        let mode = [];
+
+        numbers.forEach(num => {
+            frequency[num] = (frequency[num] || 0) + 1;
+            if (frequency[num] > maxFreq) {
+                maxFreq = frequency[num];
+            }
+        });
+
+        for (let num in frequency) {
+            if (frequency[num] === maxFreq) {
+                mode.push(Number(num));
+            }
+        }
+
+        if (mode.length === numbers.length) {
+            mode = ["No mode"];
+        }
+
+        const variance = numbers.reduce((sum, val) => sum + Math.pow(val - mean, 2), 0) / numbers.length;
+        const stdDev = Math.sqrt(variance);
+
+        document.getElementById('results').innerHTML = `
+            <p>Mean: ${mean.toFixed(2)}</p>
+            <p>Median: ${median}</p>
+            <p>Mode: ${mode.join(', ')}</p>
+            <p>Variance: ${variance.toFixed(2)}</p>
+            <p>Standard Deviation: ${stdDev.toFixed(2)}</p>
+        `;
+    }
+</script>
+
+</body>
+</html>

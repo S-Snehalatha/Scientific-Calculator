@@ -1,0 +1,115 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <title>Indefinite Integration Calculator</title>
+  <style>
+    body {
+      font-family: Arial, sans-serif;
+      background-color: #f9f9f9;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      height: 100vh;
+      margin: 0;
+    }
+
+    .container {
+      background-color: white;
+      padding: 30px;
+      border-radius: 10px;
+      box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+      width: 400px;
+    }
+
+    h1 {
+      text-align: center;
+      margin-bottom: 20px;
+    }
+
+    input, button {
+      width: 100%;
+      padding: 10px;
+      margin: 10px 0;
+      border-radius: 6px;
+      border: 1px solid #ccc;
+      font-size: 16px;
+    }
+
+    button {
+      background-color: #007bff;
+      color: white;
+      border: none;
+      font-size: 16px;
+      cursor: pointer;
+    }
+
+    button:hover {
+      background-color: #0056b3;
+    }
+
+    .result {
+      text-align: center;
+      font-size: 18px;
+      margin-top: 20px;
+      font-weight: bold;
+    }
+
+    .error {
+      color: red;
+      text-align: center;
+      margin-top: 20px;
+    }
+  </style>
+</head>
+<body>
+  <div class="container">
+    <h1>∫ Indefinite Integral Calculator</h1>
+
+    <label for="function">Enter the function (e.g., sin(x), cos(x), x^2):</label>
+    <input type="text" id="functionInput" placeholder="f(x)" />
+
+    <button onclick="calculateIndefiniteIntegral()">Calculate Indefinite Integral</button>
+
+    <div class="result" id="resultBox"></div>
+    <div class="error" id="errorBox"></div>
+  </div>
+
+  <script>
+    function calculateIndefiniteIntegral() {
+      const func = document.getElementById('functionInput').value.trim();
+
+      const resultBox = document.getElementById('resultBox');
+      const errorBox = document.getElementById('errorBox');
+
+      resultBox.textContent = '';
+      errorBox.textContent = '';
+
+      if (!func) {
+        errorBox.textContent = "Please provide a valid function.";
+        return;
+      }
+
+      // Known integrals (symbolic only for now)
+      const knownIntegrals = {
+        "sin(x)": "-cos(x) + C",
+        "cos(x)": "sin(x) + C",
+        "x^2": "x^3 / 3 + C",
+        "x": "x^2 / 2 + C",
+        "exp(x)": "exp(x) + C",
+        "log(x)": "x * log(x) - x + C"
+      };
+
+      let integralResult = "";
+
+      if (knownIntegrals[func]) {
+        integralResult = `∫(${func}) dx = ${knownIntegrals[func]}`;
+      } else {
+        integralResult = "Indefinite integral cannot be calculated symbolically in this version.";
+      }
+
+      resultBox.textContent = integralResult;
+    }
+  </script>
+</body>
+</html>

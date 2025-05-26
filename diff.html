@@ -1,0 +1,111 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <title>Differentiation Calculator</title>
+  <style>
+    body {
+      font-family: Arial, sans-serif;
+      background-color: #f9f9f9;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      height: 100vh;
+      margin: 0;
+    }
+
+    .container {
+      background-color: white;
+      padding: 30px;
+      border-radius: 10px;
+      box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+      width: 400px;
+    }
+
+    h1 {
+      text-align: center;
+      margin-bottom: 20px;
+    }
+
+    input, button {
+      width: 100%;
+      padding: 10px;
+      margin: 10px 0;
+      border-radius: 6px;
+      border: 1px solid #ccc;
+      font-size: 16px;
+    }
+
+    button {
+      background-color: #007bff;
+      color: white;
+      border: none;
+      font-size: 16px;
+      cursor: pointer;
+    }
+
+    button:hover {
+      background-color: #0056b3;
+    }
+
+    .result {
+      text-align: center;
+      font-size: 18px;
+      margin-top: 20px;
+      font-weight: bold;
+    }
+
+    .error {
+      color: red;
+      text-align: center;
+      margin-top: 20px;
+    }
+  </style>
+</head>
+<body>
+  <div class="container">
+    <h1>∂ Differentiation Calculator</h1>
+
+    <label for="functionInput">Enter the function (e.g., sin(x), cos(x), x^2):</label>
+    <input type="text" id="functionInput" placeholder="f(x)" />
+
+    <button onclick="calculateDerivative()">Calculate Derivative</button>
+
+    <div class="result" id="resultBox"></div>
+    <div class="error" id="errorBox"></div>
+  </div>
+
+  <script>
+    function calculateDerivative() {
+      const func = document.getElementById('functionInput').value.trim();
+      const resultBox = document.getElementById('resultBox');
+      const errorBox = document.getElementById('errorBox');
+
+      resultBox.textContent = '';
+      errorBox.textContent = '';
+
+      if (!func) {
+        errorBox.textContent = "Please provide a valid function.";
+        return;
+      }
+
+      const knownDerivatives = {
+        "sin(x)": "cos(x)",
+        "cos(x)": "-sin(x)",
+        "tan(x)": "sec²(x)",
+        "x^2": "2*x",
+        "x^3": "3*x^2",
+        "x": "1",
+        "exp(x)": "exp(x)",
+        "log(x)": "1/x"
+      };
+
+      if (knownDerivatives[func]) {
+        resultBox.textContent = `d/dx(${func}) = ${knownDerivatives[func]}`;
+      } else {
+        resultBox.textContent = "Derivative cannot be calculated symbolically in this version.";
+      }
+    }
+  </script>
+</body>
+</html>
